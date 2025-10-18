@@ -22,8 +22,8 @@ public class TaskManagerDemo {
                     scanner.nextLine();
                 } catch (InputMismatchException e){
                     System.out.println("Ошибка ввода: Пожалуйста, введите корректное число.");
-                    scanner.nextLine(); // Очистить буфер сканера
-                    continue; // Перейти к следующей итерации
+                    scanner.nextLine();
+                    continue;
                 }
                 catch (IllegalArgumentException e){
                     System.out.println(e.getMessage());
@@ -33,7 +33,7 @@ public class TaskManagerDemo {
                 account = new TaskManager(id, balance);
 
                 System.out.println();
-                break; // Пустая строка для разделения
+                break;
             }
 
             while (running){
@@ -43,11 +43,11 @@ public class TaskManagerDemo {
                 try {
                     System.out.print("Выберите действие (1-4): \n");
                     choice = scanner.nextInt();
-                    scanner.nextLine(); // Поглотить перевод строки
+                    scanner.nextLine();
                 } catch (InputMismatchException e) {
                     System.out.println("Ошибка ввода: Пожалуйста, введите номер действия (число).");
-                    scanner.nextLine(); // Очистить буфер сканера
-                    continue; // Перейти к следующей итерации
+                    scanner.nextLine();
+                    continue;
                 }
 
                 switch (choice) {
@@ -58,8 +58,8 @@ public class TaskManagerDemo {
                             account.deposit(deposit);
                         } catch (InputMismatchException e){
                             System.out.println("Ошибка ввода: Пожалуйста, введите корректное число.");
-                            scanner.nextLine(); // Очистить буфер сканера
-                            continue; // Перейти к следующей итерации
+                            scanner.nextLine();
+                            continue;
                         }
                         catch (IllegalArgumentException e){
                             System.out.println(e.getMessage());
@@ -73,8 +73,8 @@ public class TaskManagerDemo {
                             account.withdraw(withdraw);
                         } catch (InputMismatchException e){
                             System.out.println("Ошибка ввода: Пожалуйста, введите корректное число.");
-                            scanner.nextLine(); // Очистить буфер сканера
-                            continue; // Перейти к следующей итерации
+                            scanner.nextLine();
+                            continue;
                         }
                         catch (IllegalArgumentException e){
                             System.out.println(e.getMessage());
