@@ -19,20 +19,15 @@ public class ArrayListAnalyzerTest {
 
         List<String> result = ArrayListAnalyzer.filterByPrefix(input, "ap");
 
-        assertThat(result)
-                .isNotNull()
-                .hasSize(3)
-                .containsExactlyElementsOf(expected);
+        assertThat(result).isNotNull().hasSize(3).containsExactlyElementsOf(expected);
     }
 
     @Test
     @DisplayName("Метод filterByPrefix должен выбросить исключение при null аргументах")
     void shouldThrowExceptionForNullArgumentsInFilterByPrefix() {
-        assertThatThrownBy(() -> ArrayListAnalyzer.filterByPrefix(null, "test"))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ArrayListAnalyzer.filterByPrefix(null, "test")).isInstanceOf(IllegalArgumentException.class);
 
-        assertThatThrownBy(() -> ArrayListAnalyzer.filterByPrefix(Arrays.asList("test"), null))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ArrayListAnalyzer.filterByPrefix(Arrays.asList("test"), null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -63,14 +58,10 @@ public class ArrayListAnalyzerTest {
     @DisplayName("Метод partition должен корректно разбивать список на части")
     void shouldPartitionListCorrectly() {
         List<String> input = Arrays.asList("apple", "banana", "apricot", "orange", "app");
-        assertThat(ArrayListAnalyzer.partition(input, 2)).hasSize(3)
-                .containsExactly(Arrays.asList("apple", "banana"), Arrays.asList("apricot", "orange"),
-                        Arrays.asList("app"));
+        assertThat(ArrayListAnalyzer.partition(input, 2)).hasSize(3).containsExactly(Arrays.asList("apple", "banana"), Arrays.asList("apricot", "orange"), Arrays.asList("app"));
 
         input = Arrays.asList("apple", "banana", "apricot", "orange", "app", "test");
-        assertThat(ArrayListAnalyzer.partition(input, 2)).hasSize(3)
-                .containsExactly(Arrays.asList("apple", "banana"), Arrays.asList("apricot", "orange"),
-                        Arrays.asList("app", "test"));
+        assertThat(ArrayListAnalyzer.partition(input, 2)).hasSize(3).containsExactly(Arrays.asList("apple", "banana"), Arrays.asList("apricot", "orange"), Arrays.asList("app", "test"));
     }
 
     @Test

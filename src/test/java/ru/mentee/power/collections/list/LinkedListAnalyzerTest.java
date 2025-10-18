@@ -2,7 +2,9 @@ package ru.mentee.power.collections.list;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import java.util.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,10 +19,7 @@ public class LinkedListAnalyzerTest {
 
         List<Integer> result = LinkedListAnalyzer.mergeLists(list1, list2);
 
-        assertThat(result)
-                .isNotNull()
-                .hasSize(5)
-                .containsExactly(1, 2, 3, 4, 5);
+        assertThat(result).isNotNull().hasSize(5).containsExactly(1, 2, 3, 4, 5);
     }
 
     @Test
