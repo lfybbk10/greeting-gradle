@@ -21,8 +21,9 @@ public class SimpleCollectionTasks {
             return 0;
 
         int count = 0;
+        startChar = Character.toLowerCase(startChar);
         for (String string : strings) {
-            if (string != null && string.startsWith(String.valueOf(startChar))) {
+            if (string != null && string.toLowerCase().startsWith(String.valueOf(startChar))) {
                 count++;
             }
         }
