@@ -4,35 +4,175 @@ import ru.mentee.power.collections.library.comparator.AvailabilityComparator;
 import ru.mentee.power.collections.library.comparator.PublicationYearComparator;
 import ru.mentee.power.collections.library.comparator.TitleComparator;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 
-public class LibraryManager {
-    // TODO: Объявить коллекцию для хранения книг (Map<String, Book> с ключом ISBN)
+public class LibraryManager implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 100L;
+
     private Map<String, Book> books;
 
-    // TODO: Объявить коллекцию для хранения читателей (Map<String, Reader> с ключом ID)
     private Map<String, Reader> readers;
 
-    // TODO: Объявить коллекцию для хранения истории выдач (List<Borrowing>)
     private List<Borrowing> borrowingsHistory;
 
-    // TODO: Объявить коллекцию для группировки книг по жанрам (Map<Book.Genre, Set<Book>>)
-    private Map<Book.Genre, Set<Book>> booksByGenres;
+    private transient Map<Book.Genre, Set<Book>> booksByGenres;
 
-    // TODO: Объявить коллекцию для хранения авторов и их книг (Map<String, List<Book>>)
-    private Map<String, List<Book>> booksByAuthors;
+    private transient Map<String, List<Book>> booksByAuthors;
 
-    // TODO: Объявить дополнительные коллекции для эффективной работы с данными (по необходимости)
-
-    // TODO: Реализовать конструктор, который инициализирует все коллекции
 
     public LibraryManager() {
         books = new HashMap<>();
         readers = new HashMap<>();
         borrowingsHistory = new ArrayList<>();
+        rebuildIndexes();
+    }
+
+    // --- Методы Состояния ---
+    public void saveLibraryState(String filename) {
+        try(FileOutputStream fos = new FileOutputStream(filename);
+            BufferedOutputStream bos  = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+
+            oos.writeObject(this);
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Файл не найден: "+e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Ошибка обработки файла: "+e.getMessage());
+        }
+    }
+
+    public static LibraryManager loadLibraryState(String filename) {
+        if (Files.exists(Paths.get(filename))) {
+            try(FileInputStream fis = new FileInputStream(filename);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            ObjectInputStream ois = new ObjectInputStream(bis)) {
+
+                Object obj = ois.readObject();
+                if(obj instanceof LibraryManager manager) {
+                    manager.rebuildIndexes();
+                    return manager;
+                }
+                else{
+                    System.err.println("Загруженный объект не является экземпляром LibraryManager");
+                }
+            } catch (FileNotFoundException e) {
+                System.err.println("Файл не найден: "+e.getMessage());
+            } catch (IOException e) {
+                System.err.println("Ошибка обработки файла: "+e.getMessage());
+            } catch (ClassNotFoundException e) {
+                System.err.println("Класс не найден: "+e.getMessage());
+            }
+        }
+        else{
+            System.err.println("Файл не найден!");
+        }
+        return null;
+    }
+
+    private void rebuildIndexes() {
         booksByGenres = new EnumMap<>(Book.Genre.class);
         booksByAuthors = new HashMap<>();
+
+        if(!books.isEmpty()) {
+            for (Book book : books.values()) {
+                fillAdditionalCollections(book);
+            }
+        }
+        System.out.println("(Пере)индексация transient полей выполнена (или не требуется).");
+    }
+
+    private void fillAdditionalCollections(Book book) {
+        if(booksByGenres.containsKey(book.getGenre())) {
+            booksByGenres.get(book.getGenre()).add(book);
+        }
+        else{
+            booksByGenres.put(book.getGenre(), new HashSet<>(List.of(book)));
+        }
+
+        for (String author : book.getAuthors()) {
+            if(!booksByAuthors.containsKey(author)) {
+                booksByAuthors.put(author, new ArrayList<>(List.of(book)));
+            }
+            else{
+                booksByAuthors.get(author).add(book);
+            }
+        }
+    }
+
+    // --- Методы CSV ---
+    public static final String BOOK_CSV_HEADER = "ISBN;Title;Authors;Genre;Year;Pages;Available";
+
+    public void exportBooksToCsv(String filename, String delimiter) {
+        try(FileWriter fw = new FileWriter(filename);
+        BufferedWriter bw = new BufferedWriter(fw);) {
+
+            bw.write(BOOK_CSV_HEADER);
+            bw.newLine();
+
+            for (Book book : books.values()) {
+                String firstAuthor = !book.getAuthors().isEmpty() ? book.getAuthors().iterator().next() : "";
+                String joinedString = String.join(delimiter, book.getIsbn(), book.getTitle(), firstAuthor, book.getGenre().toString(),
+                        String.valueOf(book.getPublicationYear()), String.valueOf(book.getPageCount()), String.valueOf(book.isAvailable()));
+
+                bw.write(joinedString);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Ошибка обработки файла: "+e.getMessage());
+        }
+    }
+
+    public int importBooksFromCsv(String filename, String delimiter, boolean append) {
+        int importedCount = 0;
+
+        if(!append) {
+            books.clear();
+            rebuildIndexes();
+        }
+        try(FileReader fr = new FileReader(filename);
+        BufferedReader br = new BufferedReader(fr);) {
+
+            br.readLine();
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(delimiter);
+                String isbn = parts[0].trim();
+                String title = parts[1].trim();
+                String author = parts[2].trim();
+                String genre = parts[3].trim();
+                int year = Integer.parseInt(parts[4].trim());
+                int pages = Integer.parseInt(parts[5].trim());
+                boolean available = Boolean.parseBoolean(parts[6].trim());
+
+                Book book = new Book(isbn, title, year, Book.Genre.valueOf(genre));
+                book.setAuthors(new HashSet<>(List.of(author)));
+                book.setPageCount(pages);
+                book.setAvailable(available);
+
+                boolean addedStatus = addBook(book);
+                if(addedStatus) {
+                    importedCount++;
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Файл не найден: "+e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Ошибка обработки файла: "+e.getMessage());
+        }
+        catch (NumberFormatException e) {
+            System.err.println("Ошибка обработки числа: "+e.getMessage());
+        }
+        catch (Exception e) {
+            System.err.println("Ошибка импорта книг: "+e.getMessage());
+        }
+        return importedCount;
     }
 
     // ============ Методы для работы с книгами ============
@@ -49,21 +189,7 @@ public class LibraryManager {
 
         books.put(book.getIsbn(), book);
 
-        if(booksByGenres.containsKey(book.getGenre())) {
-            booksByGenres.get(book.getGenre()).add(book);
-        }
-        else{
-            booksByGenres.put(book.getGenre(), new HashSet<>(List.of(book)));
-        }
-
-        for (String author : book.getAuthors()) {
-            if(!booksByAuthors.containsKey(author)) {
-                booksByAuthors.put(author, new ArrayList<>(List.of(book)));
-            }
-            else{
-                booksByAuthors.get(author).add(book);
-            }
-        }
+        fillAdditionalCollections(book);
         return true;
     }
 

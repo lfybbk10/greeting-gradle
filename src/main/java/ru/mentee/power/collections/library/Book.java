@@ -1,10 +1,15 @@
 package ru.mentee.power.collections.library;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class Book {
+public class Book implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String isbn;
     private String title;
     private Set<String> authors;

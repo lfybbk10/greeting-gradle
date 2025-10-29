@@ -1,8 +1,13 @@
 package ru.mentee.power.collections.library;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Reader {
+public class Reader implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String id;
     private String name;
     private String email;
@@ -51,7 +56,6 @@ public class Reader {
         this.category = category;
     }
 
-    // TODO: Переопределить equals и hashCode, чтобы читатели считались равными, если у них одинаковый ID
     @Override
     public boolean equals(Object o) {
         if(o instanceof Reader reader) {

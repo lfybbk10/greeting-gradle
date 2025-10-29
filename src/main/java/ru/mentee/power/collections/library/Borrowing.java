@@ -1,10 +1,15 @@
 package ru.mentee.power.collections.library;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Objects;
 
-public class Borrowing {
+public class Borrowing implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String isbn;
     private String readerId;
     private LocalDate borrowDate;
@@ -59,23 +64,19 @@ public class Borrowing {
         this.returnDate = returnDate;
     }
 
-    // TODO: Реализовать метод isOverdue(), который возвращает true, если срок возврата истек (текущая дата > dueDate),
     // а книга еще не возвращена (returnDate == null)
     public boolean isOverdue() {
         return LocalDate.now().isAfter(dueDate);
     }
 
-    // TODO: Реализовать метод isReturned(), который возвращает true, если книга была возвращена (returnDate != null)
     public boolean isReturned() {
         return returnDate != null;
     }
 
-    // TODO: Реализовать метод returnBook(LocalDate returnDate), который устанавливает дату возврата книги
     public void returnBook(LocalDate returnDate) {
         this.returnDate = returnDate;
     }
 
-    // TODO: Переопределить equals и hashCode, чтобы записи считались равными, если у них одинаковые isbn, readerId и borrowDate
     @Override
     public boolean equals(Object o) {
         if(o instanceof Borrowing other) {
